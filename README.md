@@ -127,35 +127,35 @@ UNSUB - unsubscribe to key data
     key: “foo/bar“
 
 
-## Running ???
-/*
-Pre-build docker images is available at: hardcoreeng/service_hulykvs:{tag}.
+## Running
+
+Pre-build docker images is available at: hardcoreeng/service_hulypulse:{tag}.
 
 You can use the following command to run the image locally:
 ```bash
-docker run -p 8094:8094 -it --rm hardcoreeng/service_hulykvs:{tag}"
+docker run -p 8095:8095 -it --rm hardcoreeng/service_hulypulse:{tag}"
 ```
 
 If you want to run the service as a part of local huly development environment use the following command:
 ```bash
- export HULY_DB_CONNECTION="postgresql://root@huly.local:26257/defaultdb?sslmode=disable"
- docker run --rm -it --network dev_default -p 8094:8094 hardcoreeng/service_hulykvs:{tag}
+ export HULY_REDIS_URLS="redis://huly.local:6379"
+ docker run --rm -it --network dev_default -p 8095:8095 hardcoreeng/service_hulypulse:{tag}
 ```
-This will run Hulykvs in the same network as the rest of huly services, and set the coackroach connection string to the one matching the local dev cockroach instance. 
+This will run Hulypulse in the same network as the rest of huly services, and set the redis connection string to the one matching the local dev redis instance.
 
-You can then access hulykvs at http://localhost:8095.
-*/
+You can then access hulypulse at http://localhost:8095.
+
 
 ## Authetication
-Hulykvs uses bearer JWT token authetication. At the moment, it will accept any token signed by the hulykvs secret. The secret is set in the environment variable HULY_TOKEN_SECRET variable. 
+Hulypulse uses bearer JWT token authetication. At the moment, it will accept any token signed by the hulypulse secret. The secret is set in the environment variable HULY_TOKEN_SECRET variable. 
 
 ## Configuration
-The following environment variables are used to configure hulykvs:
+The following environment variables are used to configure hulypulse:
    - ```HULY_BIND_HOST```: host to bind the server to (default: 0.0.0.0)
    - ```HULY_BIND_PORT```: port to bind the server to (default: 8094)
    - ```HULY_PAYLOAD_SIZE_LIMIT```: maximum size of the payload (default: 2Mb)
    - ```HULY_TOKEN_SECRET```: secret used to sign JWT tokens (default: secret)
-   - ```HULY_REDIS_URLS```: redis connection string (default: redis://127.0.0.1:6379)
+   - ```HULY_REDIS_URLS```: redis connection string (default: redis://huly.local:6379)
    - ```HULY_REDIS_PASSWORD```: redis password (default: "&lt;invalid&gt;")
    - ```HULY_REDIS_MODE```: redis mode "direct" or "sentinel" (default: "direct")
    - ```HULY_REDIS_SERVICE```: redis service (default: "mymaster")
@@ -165,10 +165,10 @@ The following environment variables are used to configure hulykvs:
 - [ ] HEAD request
 - [ ] Conditional update (optimistic locking)
 - [ ] Support for open telemetry
-- [ ] Concurrency control for database migration (several instances of hulykvs are updated at the same time)
+- [ ] Concurrency control for database migration (several instances of hulypulse are updated at the same time)
 - [ ] TLS support
 - [ ] Namespacee based access control
-- [ ] Liveness/readiness probe endpoint 
+- [ ] Liveness/readiness probe endpoint
 
 ## Contributing
 Contributions are welcome! Please open an issue or a pull request if you have any suggestions or improvements.
