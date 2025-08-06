@@ -156,7 +156,7 @@ The following environment variables are used to configure hulykvs:
    - ```HULY_PAYLOAD_SIZE_LIMIT```: maximum size of the payload (default: 2Mb)
    - ```HULY_TOKEN_SECRET```: secret used to sign JWT tokens (default: secret)
    - ```HULY_REDIS_URLS```: redis connection string (default: redis://127.0.0.1:6379)
-   - ```HULY_REDIS_PASSWORD```: redis password (default: "<invalid>")
+   - ```HULY_REDIS_PASSWORD```: redis password (default: "&lt;invalid&gt;")
    - ```HULY_REDIS_MODE```: redis mode "direct" or "sentinel" (default: "direct")
    - ```HULY_REDIS_SERVICE```: redis service (default: "mymaster")
 
