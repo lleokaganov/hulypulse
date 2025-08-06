@@ -1,4 +1,4 @@
-# Hulykvs
+# Hulypulse
 
 Hulypulse is a service that enables clients to share information on a “whiteboard”. Clients connected to the same “whiteboard” see data provided by other clients to the whiteboard.
 
