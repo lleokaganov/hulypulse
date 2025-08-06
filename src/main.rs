@@ -32,7 +32,7 @@ mod config;
 mod handlers;
 
 mod redis;
-use crate::redis::connect_to_redis;
+use crate::redis::redis_connect;
 
 use config::CONFIG;
 
@@ -109,7 +109,7 @@ default_workspace_uuid: {}\n",
 );
 
     println!("=== Connecting to Redis ===");
-    let redis = connect_to_redis().await?;
+    let redis = redis_connect().await?;
     let redis = std::sync::Arc::new(tokio::sync::Mutex::new(redis));
     let redis_data = web::Data::new(redis.clone());
 
@@ -131,17 +131,18 @@ default_workspace_uuid: {}\n",
 
         App::new()
             .app_data(payload_config.clone())
-            //            .app_data(Data::new(pool.clone()))
             .app_data(redis_data.clone())
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(
                 web::scope("/api")
-                    //                    .wrap(middleware::from_fn(interceptor))
+                    // .wrap(middleware::from_fn(interceptor))
                     //                    .route("/{workspace}/{bucket}", web::get().to(handlers::list))
                     //                    .route("/{workspace}/{bucket}/{id}",web::get().to(handlers::get))
-                    .route("/", web::get().to(handlers::get)), //                    .route("/{workspace}/{bucket}/{id}",web::put().to(handlers::put))
-                                                               //                    .route("/{workspace}/{bucket}/{id}",web::delete().to(handlers::delete)),
+		    .route("/{workspace}/{key:.*}",web::put().to(handlers::put))
+                    .route("/{workspace}/{key:.*}",web::delete().to(handlers::delete))
+
+                //    .route("/", web::get().to(handlers::get))
             )
             .route("/status", web::get().to(async || "ok"))
     })

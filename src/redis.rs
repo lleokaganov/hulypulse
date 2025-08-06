@@ -1,10 +1,109 @@
 use crate::config::{CONFIG, RedisMode};
 use redis::{
-    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, aio::MultiplexedConnection,
-};
+    ToRedisArgs,
+    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, aio::MultiplexedConnection };
 use url::Url;
 
-pub async fn connect_to_redis() -> anyhow::Result<MultiplexedConnection> {
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize)]
+pub struct RedisArray {
+    pub key: String,
+    pub user: String,
+    pub data: String,
+    pub expires_at: Option<u64>, // секунды до истечения TTL
+}
+
+
+/// redis_read(&connection,key)
+
+pub async fn redis_read(
+    conn: &mut MultiplexedConnection,
+    key: &str,
+) -> redis::RedisResult<Option<RedisArray>> {
+    // 1. Читаем значение
+    let data: Option<String> = redis::cmd("GET")
+        .arg(key)
+        .query_async(conn)
+        .await?;
+
+    // Если значение отсутствует — сразу возвращаем None
+    let Some(data) = data else {
+        return Ok(None);
+    };
+
+    // 2. Получаем TTL
+    let ttl: i64 = redis::cmd("TTL")
+        .arg(key)
+        .query_async(conn)
+        .await?;
+
+    let expires_at = if ttl >= 0 {
+        Some(ttl as u64)
+    } else {
+        None // -1 (нет TTL), -2 (нет ключа)
+    };
+
+    // 3. Формируем структуру
+    Ok(Some(RedisArray {
+        key: key.to_string(),
+        user: "system".to_string(), // или бери из контекста, если надо
+        data,
+        expires_at,
+    }))
+}
+
+
+
+/// redis_save(&connection,key,value,ttl)
+/*
+pub async fn redis_save(
+    conn: &mut MultiplexedConnection,
+    key: &str,
+    value: &str,
+    ttl_seconds: usize,
+) -> redis::RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("EX")
+        .arg(ttl_seconds)
+        .query_async::<()>(&mut *conn)
+        .await
+}
+*/
+pub async fn redis_save<T: ToRedisArgs>(
+    conn: &mut MultiplexedConnection,
+    key: &str,
+    value: T,
+    ttl_seconds: usize,
+) -> redis::RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("EX")
+        .arg(ttl_seconds)
+        .query_async::<()>(&mut *conn)
+        .await
+}
+
+
+pub async fn redis_delete(
+    conn: &mut MultiplexedConnection,
+    key: &str,
+) -> redis::RedisResult<bool> {
+    let deleted: i32 = redis::cmd("DEL")
+        .arg(key)
+        .query_async(conn)
+        .await?;
+
+    Ok(deleted > 0)
+}
+
+
+
+/// redis_connect()
+pub async fn redis_connect() -> anyhow::Result<MultiplexedConnection> {
     let default_port = match CONFIG.redis_mode {
         RedisMode::Sentinel => 6379,
         RedisMode::Direct => 6380,

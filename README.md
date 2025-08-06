@@ -1,6 +1,92 @@
 # Hulykvs
 
-Hulykvs is a simple key-value store service implemented in Rust. It uses cockroachdb as the backend and provides a simple http api for storing and retrieving key-value pairs.
+Hulypulse is a service that enables clients to share information on a “whiteboard”. Clients connected to the same “whiteboard” see data provided by other clients to the whiteboard.
+
+The service is exposed as REST and WebSocket API.
+
+**Usage scenarios:**
+
+- user presence in a document
+- user is “typing” event
+- user cursor position in editor or drawing board
+- service posts a process status
+
+## Key
+Key is a string that consists of one or multiple segments separated by some separator.
+Example: foo/bar/baz.
+
+It is possible to use wildcard keys to list or subscribe to values with this prefix.
+
+Key may contain a special section (guard) $that separates public and private data. “Private” data is available when querying or subscribing by exact key.
+Example foo/bar/$/private, this value can be queried by foo/bar/$/private or foo/bar/$/but not by foo/bar/
+
+## Data
+“Data” is an arbitrary JSON document.
+Size of data is limited to some reasonable size
+
+## API
+Methods
+
+GET - returns values of one key
+
+LIST - returns values with given prefix until the “sentinel”
+
+PUT - put value to the key
+- Support CAS
+- Support If-* headers
+
+DELETE - delete value of the key
+
+SUB - subscribe to key data + get initial state
+Behavior identical to LIST
+
+UNSUB - unsubscribe to key data
+
+
+## HTTP API
+
+```PUT /{workspace}/{key}```
+- Input
+        Body - data
+        Content-Type: application/json (do we need something else?)
+        Content-Length: optional
+        Headers: TTL or absolute expiration time
+            HULY-TTL
+            HULY-EXPIRE-AT
+        Conditional Headers
+            If-*
+- Output
+        Status: 201
+        No body
+
+```PATCH /{workspace}/{key}```
+- TODO (not in v1)
+
+```DELETE /{workspace}/{key}```
+- Output
+    Status: 204
+
+```GET /{workspace}/{key}```
+- Output
+    Status 200
+    Content-type: application/json
+    Body:
+	- key
+        - user
+        - data
+        - expiresAt ?
+
+```GET /{workspace}?prefix={key}```
+- Output
+    Status 200
+    Content-type: application/json
+    Body (array):
+        - key
+        - user
+        - data
+        - expiresAt ?
+
+
 
 ## API v2
 Create a key-value pair api
