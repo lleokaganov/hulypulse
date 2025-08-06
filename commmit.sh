@@ -12,6 +12,6 @@ clear
 # git checkout -b feature/${NAME}
 git add .
 #git commit -m "First test redis 5 sec, use: http://127.0.0.1:8095/api/"
-git commit -m "Readme 1"
+git commit -m "Readme 2"
 git push origin
 # feature/${NAME}
