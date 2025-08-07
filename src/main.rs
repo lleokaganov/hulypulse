@@ -18,18 +18,24 @@
 use std::pin::Pin;
 
 use actix_cors::Cors;
+
 use actix_web::{
-    App, Error, HttpMessage, HttpServer,
+    App, Error, HttpMessage, HttpRequest, HttpResponse, HttpServer,
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
     middleware::{self, Next},
     web::{self, Data, PayloadConfig},
 };
 
+use actix_web_actors::ws;
+
 use tracing::info;
 
 mod config;
-mod handlers;
+mod handlers_http;
+mod handlers_ws;
+
+use crate::handlers_ws::{WsSession, handler};
 
 mod redis;
 use crate::redis::redis_connect;
@@ -72,55 +78,15 @@ async fn interceptor(
 }
 
 
-/*
-#[derive(Debug)]
-struct ConnectionCustomizer;
-
-impl bb8::CustomizeConnection<pg::Client, pg::Error> for ConnectionCustomizer {
-    fn on_acquire<'a>(
-        &'a self,
-        client: &'a mut pg::Client,
-    ) -> Pin<Box<dyn Future<Output = Result<(), pg::Error>> + Send + 'a>> {
-        Box::pin(async {
-            client
-                .execute("set search_path to $1", &[&CONFIG.db_scheme])
-                .await
-                .unwrap();
-            Ok(())
-        })
-    }
-}
-*/
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     initialize_tracing(tracing::Level::DEBUG);
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
-    tracing::info!(
-    "\n\n   bind_host: {}\n   bind_port: {}\n   payload_size_limit: {}\n   token_secret: {}\n   redis_urls: {:?}, redis_password: {}\n   redis_mode: {:?}, redis_service: {}\n   
-max_ttl: {}\n",
-    CONFIG.bind_host,
-    CONFIG.bind_port,
-    CONFIG.payload_size_limit,
-    CONFIG.token_secret,
-    CONFIG.redis_urls,
-    CONFIG.redis_password,
-    CONFIG.redis_mode,
-    CONFIG.redis_service,
-    CONFIG.max_ttl,
-);
-
-    println!("=== Connecting to Redis ===");
     let redis = redis_connect().await?;
     let redis = std::sync::Arc::new(tokio::sync::Mutex::new(redis));
     let redis_data = web::Data::new(redis.clone());
-
-    //    tracing::debug!(
-    //        connection = CONFIG.redis_password,
-    //        "redis connection string"
-    //    );
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
     let payload_config = PayloadConfig::new(CONFIG.payload_size_limit.bytes() as usize);
@@ -141,14 +107,13 @@ max_ttl: {}\n",
             .service(
                 web::scope("/api")
                     .wrap(middleware::from_fn(interceptor))
-                    .route("/{workspace}", web::get().to(handlers::list))
-                    .route("/{workspace}/{key:.*}",web::get().to(handlers::get))
-		    .route("/{workspace}/{key:.*}",web::put().to(handlers::put))
-                    .route("/{workspace}/{key:.*}",web::delete().to(handlers::delete))
-
-                //    .route("/", web::get().to(handlers::get))
+                    .route("/{workspace}", web::get().to(handlers_http::list))
+                    .route("/{workspace}/{key:.*}",web::get().to(handlers_http::get))
+		    .route("/{workspace}/{key:.*}",web::put().to(handlers_http::put))
+                    .route("/{workspace}/{key:.*}",web::delete().to(handlers_http::delete))
             )
             .route("/status", web::get().to(async || "ok"))
+	    .route("/ws/{workspace}", web::get().to(handlers_ws::handler)) // WebSocket
     })
     .bind(socket)?
     .run();
