@@ -58,12 +58,12 @@ UNSUB - unsubscribe to key data
 	- `If-Match: <md5>` — update only if current value's MD5 matches
 	- `If-None-Match: *` — insert only if the key does not exist
 - Output
-        Status:
+    - Status:
 	- `201` if inserted with `If-None-Match: *`
 	- `204` on successful insert or update
 	- `412` if the condition is not met
 	- `400` if headers are invalid
-        No body
+    - No body
 
 ```PATCH /{workspace}/{key}```
 - TODO (not in v1)
@@ -74,9 +74,9 @@ UNSUB - unsubscribe to key data
 
 ```GET /{workspace}/{key}```
 - Output
-    Status 200
-    Content-type: application/json
-    Body:
+    - Status 200
+    - Content-type: application/json
+    - Body:
         - workspace
 	- key
         - data
@@ -84,9 +84,9 @@ UNSUB - unsubscribe to key data
 
 ```GET /{workspace}?prefix={key}```
 - Output
-    Status 200
-    Content-type: application/json
-    Body (array):
+    - Status 200
+    - Content-type: application/json
+    - Body (array):
         - workspace
         - key
         - data
@@ -97,39 +97,39 @@ UNSUB - unsubscribe to key data
 **Client to Server**
 
 ```PUT```
-    correlation id (optional)
-    type: "put"
-    key: “foo/bar“
-    data
-    TTL / expiresAt
+    - correlation id (optional)
+    - type: "put"
+    - key: “foo/bar“
+    - data
+    - TTL / expiresAt
 
 ```DELETE```
-    correlation id (optional)
-    type: "delete"
-    key: “foo/bar“
+    - correlation id (optional)
+    - type: "delete"
+    - key: “foo/bar“
 
 ```SUB```
     type: "sub"
     key: “foo/bar“
 
 ```UNSUB```
-    type: "unsub"
-    key: “foo/bar“
+    - type: "unsub"
+    - key: “foo/bar“
 
 **Server to Client**
 
 ```PUT```
-    correlation id (optional)
-    type: "put"
-    workspace: "11111111-2222-3333-4444-555555555555"
-    key: “foo/bar“
-    data
-    expiresAt
+    - correlation id (optional)
+    - type: "put"
+    - workspace: "11111111-2222-3333-4444-555555555555"
+    - key: “foo/bar“
+    - data
+    - expiresAt
 
 ```DELETE```
-    correlation id (optional)
-    type: "delete"
-    key: “foo/bar“
+    - correlation id (optional)
+    - type: "delete"
+    - key: “foo/bar“
 
 
 ## Running
