@@ -34,6 +34,8 @@ mod handlers;
 mod redis;
 use crate::redis::redis_connect;
 
+mod ws_owner;
+
 use config::CONFIG;
 
 use hulyrs::services::jwt::actix::ServiceRequestExt;
@@ -55,6 +57,7 @@ fn initialize_tracing(level: tracing::Level) {
         .init();
 }
 
+// #[allow(dead_code)]
 async fn interceptor(
     request: ServiceRequest,
     next: Next<impl MessageBody>,
@@ -67,6 +70,7 @@ async fn interceptor(
 
     next.call(request).await
 }
+
 
 /*
 #[derive(Debug)]
@@ -96,7 +100,7 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!(
     "\n\n   bind_host: {}\n   bind_port: {}\n   payload_size_limit: {}\n   token_secret: {}\n   redis_urls: {:?}, redis_password: {}\n   redis_mode: {:?}, redis_service: {}\n   
-default_workspace_uuid: {}\n",
+max_ttl: {}\n",
     CONFIG.bind_host,
     CONFIG.bind_port,
     CONFIG.payload_size_limit,
@@ -105,7 +109,7 @@ default_workspace_uuid: {}\n",
     CONFIG.redis_password,
     CONFIG.redis_mode,
     CONFIG.redis_service,
-    CONFIG.default_workspace_uuid,
+    CONFIG.max_ttl,
 );
 
     println!("=== Connecting to Redis ===");
@@ -136,9 +140,9 @@ default_workspace_uuid: {}\n",
             .wrap(cors)
             .service(
                 web::scope("/api")
-                    // .wrap(middleware::from_fn(interceptor))
-                    //                    .route("/{workspace}/{bucket}", web::get().to(handlers::list))
-                    //                    .route("/{workspace}/{bucket}/{id}",web::get().to(handlers::get))
+                    .wrap(middleware::from_fn(interceptor))
+                    .route("/{workspace}", web::get().to(handlers::list))
+                    .route("/{workspace}/{key:.*}",web::get().to(handlers::get))
 		    .route("/{workspace}/{key:.*}",web::put().to(handlers::put))
                     .route("/{workspace}/{key:.*}",web::delete().to(handlers::delete))
 

@@ -77,8 +77,8 @@ UNSUB - unsubscribe to key data
     Status 200
     Content-type: application/json
     Body:
+        - workspace
 	- key
-        - user
         - data
         - expiresAt ?
 
@@ -87,8 +87,8 @@ UNSUB - unsubscribe to key data
     Status 200
     Content-type: application/json
     Body (array):
+        - workspace
         - key
-        - user
         - data
         - expiresAt ?
 
@@ -116,9 +116,9 @@ UNSUB - unsubscribe to key data
 ```PUT```
     correlation id (optional)
     type: "put"
+    workspace: "11111111-2222-3333-4444-555555555555"
     key: “foo/bar“
     data
-    user
     expiresAt
 
 ```DELETE```
@@ -159,6 +159,7 @@ The following environment variables are used to configure hulypulse:
    - ```HULY_REDIS_PASSWORD```: redis password (default: "&lt;invalid&gt;")
    - ```HULY_REDIS_MODE```: redis mode "direct" or "sentinel" (default: "direct")
    - ```HULY_REDIS_SERVICE```: redis service (default: "mymaster")
+   - ```HULY_MAX_TTL```: maximum storage time (default: 3600)
 
 ## Todo (in no particular order)
 - [ ] Optional value encryption

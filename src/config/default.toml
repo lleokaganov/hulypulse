@@ -4,9 +4,9 @@ payload_size_limit = "2mb"
 
 token_secret = "secret"
 
-default_workspace_uuid = "11111111-2222-3333-4444-555555555555"
-
 redis_urls = "redis://huly.local:6379"
 redis_password = "<invalid>"
 redis_mode = "direct"
 redis_service = "mymaster"
+
+max_ttl = 3600

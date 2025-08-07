@@ -47,12 +47,20 @@ get() {
 put() { # If-None-Match If-Match
   local match
   local match_prn
-  if [ -n "$3" ]; then match=(-H "$3: $4") ; else match=() ; fi
-  if [ -n "$3" ]; then match_prn=" ${F}$3:$4${N}" ; else match_prn="" ; fi
-  echo -n -e "📥 ${L}PUT ${W}$1${N}${match_prn} > "
+#  if [ -n "$3" ]; then match=(-H "$3: $4") ; else match=() ; fi
+#  if [ -n "$3" ]; then match_prn=" ${F}$3:$4${N}" ; else match_prn="" ; fi
+#  echo -n -e "📥 ${L}PUT ${W}$1${N}${match_prn} > "
+
+  if [ -n "$3" ]; then match1=(-H "$3") ; else match1=() ; fi
+  if [ -n "$3" ]; then match1_prn=" ${F}$3${N}" ; else match1_prn="" ; fi
+  if [ -n "$4" ]; then match2=(-H "$4") ; else match2=() ; fi
+  if [ -n "$4" ]; then match2_prn=" ${F}$4${N}" ; else match2_prn="" ; fi
+  echo -n -e "📥 ${L}PUT ${W}$1${N}${match1_prn}${match2_prn} > "
+
   local tmpfile
   tmpfile=$(mktemp)
-  curl -i -s -X PUT "$URL/$1" -H "Authorization: Bearer ${TOKEN}" "${match[@]}" -H "Content-Type: application/json" -d "$2" | tr -d '\r' > "$tmpfile"
+#  curl -v -i -s -X PUT "$URL/$1" -H "Authorization: Bearer ${TOKEN}" "${match1[@]}" "${match2[@]}" -H "Content-Type: application/json" -d "$2" | tr -d '\r' > "$tmpfile"
+  curl -i -s -X PUT "$URL/$1" -H "Authorization: Bearer ${TOKEN}" "${match1[@]}" "${match2[@]}" -H "Content-Type: application/json" -d "$2" | tr -d '\r' > "$tmpfile"
   api ${tmpfile}
 }
 
