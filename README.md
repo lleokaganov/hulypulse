@@ -95,24 +95,29 @@ UNSUB - unsubscribe to key data
 ## WebSocket API
 
 **Client to Server**
+
 ```PUT```
     correlation id (optional)
     type: "put"
     key: “foo/bar“
     data
     TTL / expiresAt
+
 ```DELETE```
     correlation id (optional)
     type: "delete"
     key: “foo/bar“
+
 ```SUB```
     type: "sub"
     key: “foo/bar“
+
 ```UNSUB```
     type: "unsub"
     key: “foo/bar“
 
 **Server to Client**
+
 ```PUT```
     correlation id (optional)
     type: "put"
